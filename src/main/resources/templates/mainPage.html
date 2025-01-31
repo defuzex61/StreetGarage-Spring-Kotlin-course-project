@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Мое приложение</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+
+<!-- Навигация -->
+<div th:insert="nav"></div>
+
+
+<div th:fragment="content">
+<!-- Заголовок -->
+<div class="jumbotron">
+    <h1 class="display-4">Сеть автосервисов StreetGarage</h1>
+    <p class="lead">Автосервис, шиномонтаж, сход-развал и магазин запчастей в АвтоТехЦентре</p>
+    <hr class="my-4">
+    <p>Мы предлагаем полный спектр услуг по ремонту и техобслуживанию легковых авто.
+        У нас работают профессиональные мастера, которые уже не первый год чинят неисправности,
+        производят ремонт и замену запчастей, обслуживание всей ходовой части автомобиля.
+        Мы специализируемся на любых легковых автомобилях, независимо от марки, модели, года выпуска,
+        типа двигателя и наличии современных электронных систем.</p>
+    <a class="btn btn-primary btn-lg" href="#" role="button">Узнать больше</a>
+</div>
+
+<!-- Информационная секция -->
+    <div class="container">
+        <h2>Наши Услуги</h2>
+        <div class="row">
+            <div class="col-md-4" th:each="service : ${services}">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${service.name}">Услуга</h5>
+                        <p class="card-text" th:text="${service.description}">Описание услуги.</p>
+                        <p class="card-text" th:text="${service.price}">Цена.</p>
+                        <a href="#" class="btn btn-primary">Подробнее</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Footer -->
+<div th:insert="footer"></div>
+</body>
+</html>

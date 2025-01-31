@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Личный кабинет</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<!-- Навигация -->
+<div th:insert="nav"></div>
+
+
+<div class="container">
+  <br>
+  <h4>Информация о пользователе</h4>
+  <p>ФИО: <span th:text="${user.firstName} + ' ' + ${user.middleName} + ' ' + ${user.lastName}"></span></p>
+  <p>Логин: <span th:text="${user.login}"></span></p>
+  <p>Email: <span th:text="${user.email}"></span></p>
+  <p>Телефон: <span th:text="${user.phone}"></span></p>
+
+  <form th:action="@{/logout}" method="post">
+    <button type="submit" class="btn btn-danger">
+      <i class="fas fa-sign-out-alt"></i> Выйти из аккаунта
+    </button>
+  </form>
+
+  <h3>Заказы</h3>
+  <h4 th:text="${requestMessage}"></h4>
+  <div th:each="request : ${requests}">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title" th:text="'Заказ #' + ${request.idRequest}"></h5>
+        <p class="card-text">Статус: <span th:text="${request.status}"></span></p>
+        <p class="card-text">Дата создания: <span th:text="${request.creationDate}"></span></p>
+        <p class="card-text">Планируемая дата: <span th:text="${request.plannedDate}"></span></p>
+      </div>
+    </div>
+  </div>
+
+  <h3>Автомобили</h3>
+  <h4 th:text="${carMessage}"></h4>
+  <div th:each="car : ${cars}">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title" th:text="${car.make} + ' ' + ${car.model}"></h5>
+        <p class="card-text">Год: <span th:text="${car.carYear}"></span></p>
+        <p class="card-text">VIN: <span th:text="${car.vin}"></span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div th:insert="footer"></div>
+
+</body>
+</html>

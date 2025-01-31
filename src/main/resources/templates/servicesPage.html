@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Услуги</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div th:insert="nav"></div>
+
+<div class="container mt-5">
+  <h2>Наши услуги</h2>
+  <div th:each="workType : ${workTypes}">
+    <div class="card mt-3">
+      <div class="card-body">
+        <h5 class="card-title" th:text="${workType.name}"></h5>
+        <p class="card-text" th:text="${workType.description}"></p>
+        <p class="card-text">Цена: <span th:text="${workType.price}"></span> руб.</p>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#requestModal"
+                th:data-worktype-id="${workType.idWorkType}" th:data-worktype-name="${workType.name}">
+          Выбрать услугу
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно для создания заявки -->
+<div class="modal fade" id="requestModal" tabindex="-1" aria-labelledby="requestModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="requestModalLabel">Создать заявку</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="requestForm" th:action="@{/requests}" method="post">
+          <input type="hidden" id="workTypeId" name="workTypeId">
+          <div class="form-group">
+            <label for="plannedDate">Желаемая дата</label>
+            <input type="datetime-local" class="form-control" id="plannedDate" name="plannedDate" required>
+          </div>
+          <div class="form-group">
+            <label for="carId">Выберите автомобиль</label>
+            <select class="form-control" id="carId" name="carId" required>
+              <option th:each="car : ${cars}" th:value="${car.idCar}" th:text="${car.make} + ' ' + ${car.model}"></option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="comment">Комментарий</label>
+            <textarea class="form-control" id="comment" name="comment"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+        <button type="submit" form="requestForm" class="btn btn-primary">Создать заявку</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div th:insert="footer"></div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script>
+  $('#requestModal').on('show.bs.modal', function (event) {
+    const button = $(event.relatedTarget); // Кнопка, которая вызвала модальное окно
+    const workTypeId = button.data('worktype-id'); // Извлечение данных из атрибута data-worktype-id
+    const workTypeName = button.data('worktype-name'); // Извлечение данных из атрибута data-worktype-name
+
+    const modal = $(this);
+    modal.find('.modal-title').text('Создать заявку на услугу: ' + workTypeName);
+    modal.find('#workTypeId').val(workTypeId); // Установка значения скрытого поля
+  });
+</script>
+</body>
+</html>
