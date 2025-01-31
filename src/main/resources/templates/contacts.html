@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Контакты</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<!-- Навигация -->
+<div th:insert="nav"></div>
+
+<div class="container mt-5">
+  <h1>Контакты</h1>
+  <p>Наш адрес: г. Москва, ул. Автомастерская, д. 123</p>
+  <p>Телефон: +7 (999) 123-45-67</p>
+  <p>Email: info@streetgarage.ru</p>
+  <p>Часы работы: Пн-Пт с 9:00 до 18:00</p>
+</div>
+
+<!-- Footer -->
+<div th:insert="~{footer}"></div>
+</body>
+</html>
