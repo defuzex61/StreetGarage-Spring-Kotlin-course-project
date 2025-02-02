@@ -9,5 +9,5 @@ data class Car(
     val model: String,
     val carYear: Int,
     val vin: String,
-    val idClient: Long
+    val user: Users
 )

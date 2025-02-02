@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Личный кабинет механика</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<!-- Навигация -->
+<div th:insert="nav"></div>
+<div class="container mt-5">
+  <h2>Личный кабинет механика</h2>
+  <p>Добро пожаловать, <span th:text="${user.firstName} + ' ' + ${user.lastName}"></span>!</p>
+
+  <h3>Новые заказы</h3>
+  <div th:each="request : ${newRequests}">
+    <div class="card mt-2">
+      <div class="card-body">
+        <h5 class="card-title">Заказ #<span th:text="${request.idRequest}"></span></h5>
+        <p class="card-text">Статус: <span th:text="${request.status}"></span></p>
+        <p class="card-text">Дата создания: <span th:text="${request.creationDate}"></span></p>
+        <form th:action="@{/mechanic/take-request}" method="post">
+          <input type="hidden" name="requestId" th:value="${request.idRequest}">
+          <button type="submit" class="btn btn-primary">Взять заказ</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ваши существующие элементы кода -->
+  <h3 class="mt-4">Мои заказы</h3>
+  <div th:each="request : ${myRequests}">
+    <div class="card mt-2">
+      <div class="card-body">
+        <h5 class="card-title">Заказ #<span th:text="${request.idRequest}"></span></h5>
+        <p class="card-text">Статус: <span th:text="${request.status}"></span></p>
+        <p class="card-text">Дата создания: <span th:text="${request.creationDate}"></span></p>
+        <button class="btn btn-success" data-toggle="modal" data-target="#completeRequestModal"
+                th:data-request-id="${request.idRequest}">Завершить заказ</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Модальное окно для завершения заказа -->
+<div class="modal fade" id="completeRequestModal" tabindex="-1" role="dialog" aria-labelledby="completeRequestModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="completeRequestModalLabel">Завершение заказа</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="completeRequestForm" th:action="@{/mechanic/complete-request}" method="post">
+          <input type="hidden" name="requestId" id="requestId">
+          <div class="form-group">
+            <label for="workType">Тип работы</label>
+            <select class="form-control" name="idWorkType" id="workType" required>
+              <!-- Здесь вы можете динамически заполнять типы работ -->
+              <option value="1">Тип работы 1</option>
+              <option value="2">Тип работы 2</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="part">Деталь</label>
+            <select class="form-control" name="idPart" id="part">
+              <!-- Здесь вы можете динамически заполнять детали -->
+              <option value="1">Деталь 1</option>
+              <option value="2">Деталь 2</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="completionDate">Дата завершения</label>
+            <input type="text" class="form-control" id="completionDate" name="completionDate" readonly>
+          </div>
+          <div class="form-group">
+            <label for="workComment">Комментарий к работе</label>
+            <textarea class="form-control" id="workComment" name="workComment"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+        <button type="button" class="btn btn-primary" id="submitCompleteRequest">Завершить заказ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Footer -->
+<div th:insert="footer"></div>
+<!-- Подключение jQuery и Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+  // JavaScript для обработки открытия модального окна
+  $('#completeRequestModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget); // Кнопка, которая открыла модальное окно
+    var requestId = button.data('request-id'); // Извлекаем ID заказа
+    var currentDate = new Date().toISOString().slice(0, 19); // Получаем текущее время в формате YYYY-MM-DDTHH:mm:ss
+
+    // Заполняем скрытое поле с ID заказа
+    $('#requestId').val(requestId);
+    // Заполняем поле с датой завершения
+    $('#completionDate').val(currentDate);
+  });
+
+  // Обработка отправки формы
+  $('#submitCompleteRequest').on('click', function() {
+    $('#completeRequestForm').submit(); // Отправляем форму
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Завершение заказа</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<!-- Навигация -->
+<div th:insert="nav"></div>
+
+<div class="container mt-5">
+  <h2>Завершение заказа</h2>
+  <form th:action="@{/mechanic/complete-request}" method="post">
+    <input type="hidden" name="requestId" th:value="${requestId}">
+    <div class="form-group">
+      <label for="workComment">Комментарий</label>
+      <textarea class="form-control" id="workComment" name="workComment" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-success">Завершить заказ</button>
+  </form>
+</div>
+
+<!-- Footer -->
+<div th:insert="footer"></div>
+</body>
+</html>

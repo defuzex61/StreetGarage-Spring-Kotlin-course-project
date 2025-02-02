@@ -14,7 +14,7 @@ data class Users(
     val email: String,
     val phone: String,
     @Enumerated(EnumType.STRING)
-    val role: UserRole
+    var role: UserRole?
 ){
     // No-arg constructor for JPA
     constructor() : this(
@@ -26,7 +26,7 @@ data class Users(
         login = "",
         email = "",
         phone = "",
-        role = UserRole.client
+        role = null
     )
 }
 

@@ -37,6 +37,7 @@ class DashboardPage(private val dashboardService: DashboardService) {
 
         // Получаем заказы пользователя
         val requests = dashboardService.getUserOrders(userId)
+
         if (requests.isEmpty()) {
             model.addAttribute("requestMessage", "У вас нет заказов.")
         } else {

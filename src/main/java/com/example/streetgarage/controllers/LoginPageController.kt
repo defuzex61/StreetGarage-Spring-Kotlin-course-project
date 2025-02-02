@@ -34,8 +34,21 @@ class LoginPageController(private val authService: AuthService) {
         val user = authService.authenticate(requestBody)
 
         return if (user != null) {
-            session.setAttribute("user", user)
-            "redirect:/dashboard"
+            println(user.role)
+            return when (user.role) {
+                "client" -> {
+                    session.setAttribute("user", user)
+                    "redirect:/dashboard"
+                }
+                "mechanic" -> {
+                    session.setAttribute("user", user)
+                    "redirect:/mechanic/dashboard"
+                }
+                else -> {
+                    // Обработка случая, если роль не соответствует ни "client", ни "mechanic"
+                    "redirect:/login" // или другой путь по умолчанию
+                }
+            }
         } else {
             model.addAttribute("error", "Неверный логин или пароль")
             "authPage"
