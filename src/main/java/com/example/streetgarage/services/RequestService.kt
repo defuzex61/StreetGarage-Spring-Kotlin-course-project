@@ -8,6 +8,10 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
+import java.math.BigDecimal
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 @Service
 class RequestService(private val restTemplate: RestTemplate) {
@@ -89,44 +93,58 @@ class RequestService(private val restTemplate: RestTemplate) {
     }
 
     // Завершить заказ
-    fun completeRequest(requestId: Long, requestWork: RequestWork): Request {
-        return try {
-            // Добавляем информацию о выполненной работе
-            val responseWork = restTemplate.postForEntity(
-                "http://localhost:8081/api/request-works",
-                requestWork,
-                RequestWork::class.java
-            )
+    fun completeRequest(
+        requestId: Long,
+        workComment: String?,
+        newPartName: String,
+        newPartArticle: String,
+        newPartPrice: BigDecimal,
+        newPartQuantity: Int,
+        newWorkTypeName: String,
+        newWorkTypeDescription: String?,
+        newWorkTypePrice: Double?
+    ): Result {
+        // Получаем информацию о заказе через API
+        val request = restTemplate.getForObject("http://localhost:8081/api/requests/$requestId", Request::class.java) ?: return Result(false, "Заказ не найден")
+        val newWorkType = WorkType(name = newWorkTypeName, description = newWorkTypeDescription, price = newWorkTypePrice ?: 0.0)
+        val newPart = Part(partName = newPartName, article = newPartArticle, price = newPartPrice, quantity = newPartQuantity)
 
-            if (!responseWork.statusCode.is2xxSuccessful) {
-                throw IllegalStateException("Ошибка при добавлении работы: ${responseWork.statusCode}")
-            }
+        // Создаем новый тип работы, если указан
+        newWorkTypeName.let {
+            restTemplate.postForEntity("http://localhost:8081/api/work-types", newWorkType, WorkType::class.java)
+        }
 
-            // Обновляем статус заказа
-            val requestResponse = restTemplate.getForEntity(
-                "http://localhost:8081/api/requests/$requestId",
-                Request::class.java
-            ).body ?: throw IllegalStateException("Заказ не найден")
+        // Создаем новую запчасть, если указана
+        newPartName.let {
+            restTemplate.postForEntity("http://localhost:8081/api/parts", newPart, Part::class.java)
+        }
 
-            // Обновляем статус на "Completed"
-            requestResponse.status = RequestStatus.Completed
+        // Обновляем статус заказа на "Completed" и устанавливаем дату завершения
+        val updatedRequest = request.copy(
+            status = RequestStatus.Completed,
+            completionDate = LocalDateTime.now().toString()
+        )
 
-            // Логируем данные перед отправкой
-            val requestJson = objectMapper.writeValueAsString(requestResponse)
-            logger.info("Отправляем запрос на завершение заказа: $requestJson")
+        // Отправляем PUT-запрос для обновления заказа
+        restTemplate.put("http://localhost:8081/api/requests/${request.idRequest}", updatedRequest)
 
-            // Отправляем обновленный заказ
-            val response = restTemplate.exchange(
-                "http://localhost:8081/api/requests/${requestResponse.idRequest}",
-                HttpMethod.PUT,
-                HttpEntity(requestResponse, null), // Передаем обновленный объект
-                Request::class.java
-            )
+        // Создаем объект RequestWork
+        val requestWork = RequestWork(
+            request = request,
+            workType = newWorkType,
+            part = newPart,
+            completionDate = LocalDateTime.now().toString(),
+            workComment = workComment
+        )
 
-            response.body ?: throw IllegalStateException("Ошибка при завершении заказа")
-        } catch (e: Exception) {
-            logger.error("Ошибка при завершении заказа: ${e.message}")
-            throw e
+        // Отправляем PUT-запрос для обновления RequestWork
+        val response = restTemplate.exchange("http://localhost:8081/api/request-works/${requestWork.idWork}", HttpMethod.PUT, HttpEntity(requestWork), RequestWork::class.java)
+
+        return if (response.statusCode.is2xxSuccessful) {
+            Result(true, null)
+        } else {
+            Result(false, "Ошибка при обновлении RequestWork: ${response.body}")
         }
     }
 }
+data class Result(val isSuccessful: Boolean, val errorMessage: String?)

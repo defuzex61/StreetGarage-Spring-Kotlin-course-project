@@ -1,10 +1,15 @@
 package com.example.streetgarage.models
 
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+
 data class RequestWork(
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val idWork: Long? = null,
-    val idRequest: Long,
-    val idWorkType: Long,
-    val idPart: Long? = null,
+    val request: Request,
+    val workType: WorkType,
+    var part: Part? = null,
     var completionDate: String? = null,
-    val workComment: String? = null
+    var workComment: String? = null
 )

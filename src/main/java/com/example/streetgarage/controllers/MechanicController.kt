@@ -1,19 +1,22 @@
 package com.example.streetgarage.controllers
 
 import com.example.streetgarage.dto.UserDTO
-import com.example.streetgarage.models.RequestWork
-import com.example.streetgarage.models.UserRole
-import com.example.streetgarage.models.Users
+import com.example.streetgarage.models.*
+
 import com.example.streetgarage.services.RequestService
+import com.example.streetgarage.services.Result
 import jakarta.servlet.http.HttpSession
+import org.springframework.http.*
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.client.RestTemplate
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Controller
 @RequestMapping("/mechanic")
-class MechanicController<UserDTO>(private val requestService: RequestService) {
+class MechanicController<UserDTO>(private val requestService: RequestService, private val restTemplate: RestTemplate) {
 
     // Личный кабинет механика
     @GetMapping("/dashboard")
@@ -49,21 +52,52 @@ class MechanicController<UserDTO>(private val requestService: RequestService) {
         return "redirect:/mechanic/dashboard"
     }
 
-    // Завершить заказ
     @PostMapping("/complete-request")
     fun completeRequest(
         @RequestParam requestId: Long,
-        @ModelAttribute requestWork: RequestWork,
+
+        @RequestParam workComment: String?,
+        @RequestParam(required = false) newPartName: String,
+        @RequestParam(required = false) newPartArticle: String,
+        @RequestParam(required = false) newPartPrice: BigDecimal,
+        @RequestParam(required = false) newPartQuantity: Int,
+        @RequestParam(required = false) newWorkTypeName: String,
+        @RequestParam(required = false) newWorkTypeDescription: String?,
+        @RequestParam(required = false) newWorkTypePrice: Double?,
+        model: Model,
         session: HttpSession
-    ): String {
-        val user = session.getAttribute("user") as? com.example.streetgarage.dto.UserDTO
-            ?: return "redirect:/login"
+    ): Any? {
+        val user = session.getAttribute("user") as? UserDTO ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized")
 
-        // Устанавливаем актуальное время завершения
-        requestWork.completionDate = LocalDateTime.now().toString() // Установите актуальное время завершения
+        // Передаем данные в сервис для обработки
+        val result = requestService.completeRequest(
+            requestId,
+            workComment,
+            newPartName,
+            newPartArticle,
+            newPartPrice,
+            newPartQuantity,
+            newWorkTypeName,
+            newWorkTypeDescription,
+            newWorkTypePrice
+        )
+        val newWorkType = WorkType(name = newWorkTypeName, description = newWorkTypeDescription, price = newWorkTypePrice ?: 0.0)
+        val newPart = Part(partName = newPartName, article = newPartArticle, price = newPartPrice, quantity = newPartQuantity)
+        val request = restTemplate.getForObject("/api/requests/$requestId", Request::class.java) ?: return Result(false, "Заказ не найден")
+        val requestWork = restTemplate.getForObject("/api/request-works/$requestId", Request::class.java) ?: return Result(false, "Заказ не найден")
 
-        // Завершение заказа
-        requestService.completeRequest(requestId, requestWork)
-        return "redirect:/mechanic/dashboard"
+        model.addAttribute("user", user)
+        model.addAttribute("newRequests", requestWork)
+        model.addAttribute("myRequests", request)
+        model.addAttribute("workTypes", newWorkType) // Добавляем типы работ
+        model.addAttribute("parts", newPart)
+        return if (result.isSuccessful) {
+            ResponseEntity.ok("Заказ успешно завершен")
+            "redirect:/mechanic/dashboard"
+        } else {
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ошибка при завершении заказа: ${result.errorMessage}")
+        }
     }
+
+
 }

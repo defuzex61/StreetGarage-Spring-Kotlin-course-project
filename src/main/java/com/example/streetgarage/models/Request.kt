@@ -6,7 +6,7 @@ data class Request(
     @JsonProperty("idRequest") val idRequest: Long? = null,
     @JsonProperty("creationDate") val creationDate: String,
     @JsonProperty("plannedDate") val plannedDate: String?,
-    @JsonProperty("completionDate") val completionDate: String?,
+    @JsonProperty("completionDate") var completionDate: String?,
     @JsonProperty("client") val client: Users,
     @JsonProperty("car") val car: Car,
     @JsonProperty("mechanic") var mechanic: Users?,
