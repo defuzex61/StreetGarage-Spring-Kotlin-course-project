@@ -28,13 +28,24 @@ class RequestService(private val restTemplate: RestTemplate) {
                 null,
                 object : ParameterizedTypeReference<List<Request>>() {}
             )
+            println(response.body)
             response.body ?: emptyList()
         } catch (e: Exception) {
             logger.error("Ошибка при получении новых заказов: ${e.message}")
             emptyList()
         }
     }
+    // Обновить планируемую дату завершения
+    fun updatePlannedDate(requestId: Long, plannedDate: String) {
+        val request = restTemplate.getForObject("http://localhost:8081/api/requests/$requestId", Request::class.java)
+            ?: throw IllegalStateException("Заказ не найден")
 
+        val updatedRequest = request.copy(
+            plannedDate = plannedDate
+        )
+
+        restTemplate.put("http://localhost:8081/api/requests/${request.idRequest}", updatedRequest)
+    }
     // Получить заказы, назначенные на механика
     fun getRequestsByMechanicId(mechanicId: Long): List<Request> {
         return try {
@@ -74,15 +85,15 @@ class RequestService(private val restTemplate: RestTemplate) {
             )
             request.status = RequestStatus.In_progress
 
-
             // Логируем данные перед отправкой
             val requestJson = objectMapper.writeValueAsString(request)
-            logger.info("Отправляем запрос на обновление заказа: ${request.toString()}")
+            logger.info("Отправляем запрос на обновление заказа: ${requestJson.toString()}")
 
             // Отправляем обновленный заказ
-            val response = restTemplate.postForEntity(
-                "http://localhost:8081/api/requests",
-                request,
+            val response = restTemplate.exchange(
+                "http://localhost:8081/api/requests/${requestId}",
+                HttpMethod.PUT,
+                HttpEntity(request),
                 Request::class.java
             )
             response.body ?: throw IllegalStateException("Ошибка при обновлении заказа")
@@ -98,7 +109,7 @@ class RequestService(private val restTemplate: RestTemplate) {
         workComment: String?,
         newPartName: String,
         newPartArticle: String,
-        newPartPrice: BigDecimal,
+        newPartPrice: Double,
         newPartQuantity: Int,
         newWorkTypeName: String,
         newWorkTypeDescription: String?,
@@ -113,16 +124,15 @@ class RequestService(private val restTemplate: RestTemplate) {
         newWorkTypeName.let {
             restTemplate.postForEntity("http://localhost:8081/api/work-types", newWorkType, WorkType::class.java)
         }
-
+        logger.info(request.plannedDate.toString())
         // Создаем новую запчасть, если указана
         newPartName.let {
             restTemplate.postForEntity("http://localhost:8081/api/parts", newPart, Part::class.java)
         }
-
         // Обновляем статус заказа на "Completed" и устанавливаем дату завершения
         val updatedRequest = request.copy(
             status = RequestStatus.Completed,
-            completionDate = LocalDateTime.now().toString()
+            completionDate = LocalDateTime.now().toString(),
         )
 
         // Отправляем PUT-запрос для обновления заказа
@@ -136,9 +146,10 @@ class RequestService(private val restTemplate: RestTemplate) {
             completionDate = LocalDateTime.now().toString(),
             workComment = workComment
         )
-
+        println("ПЛАНИРОВАННАЯ ДАТА: " + request.plannedDate)
         // Отправляем PUT-запрос для обновления RequestWork
-        val response = restTemplate.exchange("http://localhost:8081/api/request-works/${requestWork.idWork}", HttpMethod.PUT, HttpEntity(requestWork), RequestWork::class.java)
+        val response = restTemplate.exchange("http://localhost:8081/api/request-works/${requestWork.idWork}"
+            , HttpMethod.PUT, HttpEntity(requestWork), RequestWork::class.java)
 
         return if (response.statusCode.is2xxSuccessful) {
             Result(true, null)

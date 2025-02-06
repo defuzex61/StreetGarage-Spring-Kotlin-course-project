@@ -3,7 +3,6 @@ package com.example.streetgarage.models
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import java.math.BigDecimal
 
 
 data class Part(
@@ -11,6 +10,6 @@ data class Part(
     val idPart: Long? = null,
     val partName: String,
     val article: String,
-    val price: BigDecimal,
+    val price: Double,
     val quantity: Int
 )

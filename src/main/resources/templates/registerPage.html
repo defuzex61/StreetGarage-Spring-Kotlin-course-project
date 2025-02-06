@@ -5,14 +5,52 @@
 <div class="container mt-5">
   <h2>Регистрация</h2>
   <form action="/register" method="post">
+    <!-- Имя пользователя -->
     <div class="form-group">
-      <label for="username">Имя пользователя</label>
-      <input type="text" class="form-control" id="username" name="username" required>
+      <label for="login">Логин</label>
+      <input type="text" class="form-control" id="login" name="login" required>
     </div>
+
+    <!-- Пароль -->
     <div class="form-group">
       <label for="password">Пароль</label>
       <input type="password" class="form-control" id="password" name="password" required>
     </div>
+
+    <!-- Фамилия -->
+    <div class="form-group">
+      <label for="lastName">Фамилия</label>
+      <input type="text" class="form-control" id="lastName" name="lastName" required>
+    </div>
+
+    <!-- Имя -->
+    <div class="form-group">
+      <label for="firstName">Имя</label>
+      <input type="text" class="form-control" id="firstName" name="firstName" required>
+    </div>
+
+    <!-- Отчество -->
+    <div class="form-group">
+      <label for="middleName">Отчество</label>
+      <input type="text" class="form-control" id="middleName" name="middleName">
+    </div>
+
+    <!-- Email -->
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" class="form-control" id="email" name="email" required>
+    </div>
+
+    <!-- Телефон -->
+    <div class="form-group">
+      <label for="phone">Телефон</label>
+      <input type="tel" class="form-control" id="phone" name="phone" required>
+    </div>
+
+    <!-- Роль (скрытое поле, если роль всегда "client") -->
+    <input type="hidden" name="role" value="client">
+
+    <!-- Кнопка регистрации -->
     <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
   </form>
   <br>

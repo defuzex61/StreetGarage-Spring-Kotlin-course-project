@@ -1,0 +1,49 @@
+<!-- Навигация -->
+<div th:insert="nav"></div>
+
+<div th:fragment="content">
+  <div class="container mt-5">
+    <h2>Данные об автомобиле</h2>
+    <form action="/register/car" method="post">
+      <!-- Скрытое поле для ID пользователя -->
+      <input type="hidden" name="userId" th:value="${user.idUser}">
+
+      <!-- Регистрационный номер -->
+      <div class="form-group">
+        <label for="regNumber">Регистрационный номер</label>
+        <input type="text" class="form-control" id="regNumber" name="regNumber" required>
+      </div>
+
+      <!-- Марка -->
+      <div class="form-group">
+        <label for="make">Марка</label>
+        <input type="text" class="form-control" id="make" name="make" required>
+      </div>
+
+      <!-- Модель -->
+      <div class="form-group">
+        <label for="model">Модель</label>
+        <input type="text" class="form-control" id="model" name="model" required>
+      </div>
+
+      <!-- Год выпуска -->
+      <div class="form-group">
+        <label for="carYear">Год выпуска</label>
+        <input type="number" class="form-control" id="carYear" name="carYear" required>
+      </div>
+
+      <!-- VIN -->
+      <div class="form-group">
+        <label for="vin">VIN</label>
+        <input type="text" class="form-control" id="vin" name="vin" required>
+      </div>
+
+      <!-- Кнопка отправки -->
+      <button type="submit" class="btn btn-primary">Сохранить</button>
+    </form>
+    <br>
+  </div>
+</div>
+
+<!-- Footer -->
+<div th:insert="footer"></div>

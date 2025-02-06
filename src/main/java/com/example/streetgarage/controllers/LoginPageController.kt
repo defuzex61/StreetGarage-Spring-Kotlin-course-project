@@ -44,6 +44,10 @@ class LoginPageController(private val authService: AuthService) {
                     session.setAttribute("user", user)
                     "redirect:/mechanic/dashboard"
                 }
+                "admin" -> {
+                    session.setAttribute("user", user)
+                    "redirect:/admin/dashboard"
+                }
                 else -> {
                     // Обработка случая, если роль не соответствует ни "client", ни "mechanic"
                     "redirect:/login" // или другой путь по умолчанию

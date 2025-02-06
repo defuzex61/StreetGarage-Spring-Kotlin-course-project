@@ -17,6 +17,8 @@
     <div class="card mt-2">
       <div class="card-body">
         <h5 class="card-title">Заказ #<span th:text="${request.idRequest}"></span></h5>
+        <p class="card-text">Марка: <span th:text="${request.component6().component3()}"></span></p>
+        <p class="card-text">Модель: <span th:text="${request.component6().component4()}"></span></p>
         <p class="card-text">Статус: <span th:text="${request.status}"></span></p>
         <p class="card-text">Дата создания: <span th:text="${request.creationDate}"></span></p>
         <form th:action="@{/mechanic/take-request}" method="post">
@@ -35,119 +37,149 @@
         <h5 class="card-title">Заказ #<span th:text="${request.idRequest}"></span></h5>
         <p class="card-text">Статус: <span th:text="${request.status}"></span></p>
         <p class="card-text">Дата создания: <span th:text="${request.creationDate}"></span></p>
-        <button class="btn btn-success" data-toggle="modal" data-target="#completeRequestModal"
+        <button class="btn btn-success" data-toggle="modal" data-target="#createRequestModal"
                 th:data-request-id="${request.idRequest}">Завершить заказ</button>
       </div>
     </div>
   </div>
-  <div class="modal fade" id="completeRequestModal" tabindex="-1" role="dialog" aria-labelledby="completeRequestModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="completeRequestModalLabel">Завершение заказа</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <form id="completeRequestForm" th:action="@{/mechanic/complete-request}" method="post">
-            <input type="hidden" name="requestId" th:value="${newRequests[0].component1()}">
+</div>
+  <!-- Подключение Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
-            <!-- Поля для работ -->
-            <div class="form-group">
-              <label >Тип работы</label>
+  <!-- Подключение jQuery -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 
-            </div>
+  <!-- Подключение Popper.js для Bootstrap -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
 
-            <div class="form-group">
-              <label for="workComment">Комментарий к работе</label>
-              <textarea class="form-control" id="workComment" name="workComment"></textarea>
-            </div>
+  <!-- Подключение Bootstrap JS -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-            <!-- Поля для запчастей -->
-            <div class="form-group">
-              <label>Запчасть</label>
+<!-- Модальное окно для создания заявки -->
+<div class="modal fade" id="createRequestModal" tabindex="-1" role="dialog" aria-labelledby="createRequestModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createRequestModalLabel">Создать заявку</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="createRequestForm" th:action="@{/mechanic/complete-request}" method="post">
+          <input type="hidden" name="requestId" id="requestId">
+          <!-- Желаемая дата -->
+          <div class="form-group">
+            <label for="completionDate">Дата завершения</label>
+            <input type="datetime-local" class="form-control" id="completionDate" name="completionDate" required>
+          </div>
 
-            </div>
+          <!-- Выбор существующего типа работы или создание нового -->
+          <div class="form-group">
+            <label for="workTypeId">Тип работы</label>
+            <select class="form-control" id="workTypeId" name="workTypeId">
+              <option value="">Выберите тип работы</option>
+              <option th:each="workType : ${workTypes}" th:value="${workType.idWorkType}" th:text="${workType.name}"></option>
+            </select>
+          </div>
+          <!-- Кнопка для добавления нового типа работы -->
+          <button type="button" class="btn btn-link" onclick="toggleNewWorkTypeFields()">Добавить новый тип работы</button>
 
-            <div class="form-group">
-              <label for="partQuantity">Количество запчастей</label>
-              <input type="number" class="form-control" id="partQuantity" name="partQuantity" required>
-            </div>
+          <!-- Поля для нового типа работы -->
+          <div class="form-group" id="newWorkTypeFields" style="display:none;">
+            <label for="newWorkTypeName">Название нового типа работы</label>
+            <input type="text" class="form-control" id="newWorkTypeName" name="newWorkTypeName">
+          </div>
+          <div class="form-group" id="newWorkTypeDescriptionField" style="display:none;">
+            <label for="newWorkTypeDescription">Описание нового типа работы</label>
+            <textarea class="form-control" id="newWorkTypeDescription" name="newWorkTypeDescription"></textarea>
+          </div>
+          <div class="form-group" id="newWorkTypePriceField" style="display:none;">
+            <label for="newWorkTypePrice">Цена нового типа работы</label>
+            <textarea class="form-control" id="newWorkTypePrice" name="newWorkTypePrice"></textarea>
+          </div>
+          <!-- Кнопка для добавления новой запчасти -->
+          <button type="button" class="btn btn-link" onclick="toggleNewPartFields()">Добавить новую запчасть</button>
+          <!-- Выбор существующей запчасти или создание новой -->
+          <div class="form-group">
+            <label for="partId">Запчасть</label>
+            <select class="form-control" id="partId" name="partId">
+              <option value="">Выберите запчасть</option>
+              <option th:each="part : ${parts}" th:value="${part.idPart}" th:text="${part.partName}"></option>
+            </select>
+          </div>
 
-            <!-- Поля для добавления новой запчасти -->
-            <div class="form-group">
-              <label for="newPartName">Название новой запчасти</label>
-              <input type="text" class="form-control" id="newPartName" name="newPartName">
-            </div>
+          <!-- Поля для новой запчасти -->
+          <div class="form-group" id="newPartFields" style="display:none;">
+            <label for="newPartName">Название новой запчасти</label>
+            <input type="text" class="form-control" id="newPartName" name="newPartName">
+          </div>
+          <div class="form-group" id="newPartArticleField" style="display:none;">
+            <label for="newPartArticle">Артикул новой запчасти</label>
+            <input type="text" class="form-control" id="newPartArticle" name="newPartArticle">
+          </div>
+          <div class="form-group" id="newPartPriceField" style="display:none;">
+            <label for="newPartArticle">Цена новой запчасти</label>
+            <input type="text" class="form-control" id="newPartPrice" name="newPartPrice">
+          </div>
+          <div class="form-group" id="newPartQuantityField" style="display:none;">
+            <label for="newPartArticle">Цена новой запчасти</label>
+            <input type="text" class="form-control" id="newPartQuantity" name="newPartQuantity">
+          </div>
+          <!-- Комментарий -->
+          <div class="form-group">
+            <label for="comment">Комментарий</label>
+            <textarea class="form-control" id="comment" name="comment"></textarea>
+          </div>
 
-            <div class="form-group">
-              <label for="newPartArticle">Артикул новой запчасти</label>
-              <input type="text" class="form-control" id="newPartArticle" name="newPartArticle">
-            </div>
-
-            <div class="form-group">
-              <label for="newPartPrice">Цена новой запчасти</label>
-              <input type="number" class="form-control" id="newPartPrice" name="newPartPrice" step="0.01">
-            </div>
-
-            <div class="form-group">
-              <label for="newPartQuantity">Количество новой запчасти</label>
-              <input type="number" class="form-control" id="newPartQuantity" name="newPartQuantity">
-            </div>
-
-            <!-- Поля для добавления нового типа работы -->
-            <div class="form-group">
-              <label for="newWorkTypeName">Название нового типа работы</label>
-              <input type="text" class="form-control" id="newWorkTypeName" name="newWorkTypeName">
-            </div>
-
-            <div class="form-group">
-              <label for="newWorkTypeDescription">Описание нового типа работы</label>
-              <textarea class="form-control" id="newWorkTypeDescription" name="newWorkTypeDescription"></textarea>
-            </div>
-
-            <div class="form-group">
-              <label for="newWorkTypePrice">Цена нового типа работы</label>
-              <input type="number" class="form-control" id="newWorkTypePrice" name="newWorkTypePrice" step="0.01">
-            </div>
-
-            <!-- Кнопка отправки формы -->
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
-              <button type="submit" class="btn btn-primary">Завершить заказ</button>
-            </div>
-          </form>
-        </div>
+          <!-- Кнопка отправки формы -->
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+            <button type="submit" class="btn btn-primary">Создать заявку</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 </div>
+
+
+<script>
+
+  // Передача requestId в форму
+  $(document).on('click', '.complete-request-btn', function () {
+    const requestId = $(this).data('request-id');
+    $('#requestId').val(requestId); // Устанавливаем значение в скрытое поле
+  });
+
+
+  // Обработка показа полей для нового типа работы
+  function toggleNewWorkTypeFields() {
+    const newWorkTypeFields = document.getElementById('newWorkTypeFields');
+    const newWorkTypeDescriptionField = document.getElementById('newWorkTypeDescriptionField');
+    if (newWorkTypeFields.style.display === 'none') {
+      newWorkTypeFields.style.display = 'block';
+      newWorkTypeDescriptionField.style.display = 'block';
+    } else {
+      newWorkTypeFields.style.display = 'none';
+      newWorkTypeDescriptionField.style.display = 'none';
+    }
+  }
+
+  // Обработка показа полей для новой запчасти
+  function toggleNewPartFields() {
+    const newPartFields = document.getElementById('newPartFields');
+    const newPartArticleField = document.getElementById('newPartArticleField');
+    if (newPartFields.style.display === 'none') {
+      newPartFields.style.display = 'block';
+      newPartArticleField.style.display = 'block';
+    } else {
+      newPartFields.style.display = 'none';
+      newPartArticleField.style.display = 'none';
+    }
+  }
+</script>
 <!-- Footer -->
 <div th:insert="footer"></div>
-<!-- Подключение Bootstrap CSS -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-
-<!-- Подключение jQuery -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-
-<!-- Подключение Popper.js для Bootstrap -->
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-
-<!-- Подключение Bootstrap JS -->
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<script>
-  // Обработка добавления нового типа работы
-  document.getElementById('addWorkTypeButton').addEventListener('click', function() {
-    const newWorkTypeFields = document.getElementById('newWorkTypeFields');
-    newWorkTypeFields.style.display = newWorkTypeFields.style.display === 'none' ? 'block' : 'none';
-  });
-
-  // Обработка добавления новой запчасти
-  document.getElementById('addPartButton').addEventListener('click', function() {
-    const newPartFields = document.getElementById('newPartFields');
-    newPartFields.style.display = newPartFields.style.display === 'none' ? 'block' : 'none';
-  });
-</script>
 </body>
 </html>
